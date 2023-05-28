@@ -108,7 +108,8 @@ async def continue_dialog(callback_query: CallbackQuery):
     chat_cache.save()
 
     await callback_query.message.reply('Диалог продолжался. Отправьте сообщение, чтобы задать какой-нибудь '
-                                       'другой вопрос. Используйте префикс `//` чтобы бот игнорировал сообщения.')
+                                       'другой вопрос. Используйте префикс `//` чтобы бот игнорировал сообщения.',
+                                       reply_markup=get_stop_dialog_keyboard())
     await callback_query.message.edit_reply_markup(reply_markup=None)
     await callback_query.answer()
 
