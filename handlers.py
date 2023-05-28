@@ -94,6 +94,7 @@ async def continue_dialog(callback_query: CallbackQuery):
     chat_cache = Chat.get(chat_id=callback_query.message.chat.id)
     if chat_cache.is_dialog_now:
         await callback_query.message.reply('Диалоговый режим уже запущен. Остановите диалог перед этим.')
+        await callback_query.message.edit_reply_markup(reply_markup=None)
         return
 
     dialog_cache = Dialog.create()
@@ -116,7 +117,8 @@ async def continue_dialog(callback_query: CallbackQuery):
 async def stop_dialog(callback_query: CallbackQuery):
     chat_cache = Chat.get(chat_id=callback_query.message.chat.id)
     if not chat_cache.is_dialog_now:
-        await callback_query.message.reply('Диалоговый режим сейчас не запущен')
+        await callback_query.message.reply('Диалоговый режим сейчас не запущен.')
+        await callback_query.message.edit_reply_markup(reply_markup=None)
         return
 
     chat_cache.is_dialog_now = False
