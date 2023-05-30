@@ -14,7 +14,7 @@ from keyboard import get_continue_dialog_keyboard, get_stop_dialog_keyboard
 router = Router()
 
 
-@router.message()
+@router.message(Command('draw'))
 async def draw_handler(msg: aiogram.types.Message):
     text = msg.text.replace('/draw', '', 1).strip()
 
