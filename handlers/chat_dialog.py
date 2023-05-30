@@ -45,6 +45,26 @@ async def start_dialog_handler(msg: aiogram.types.Message):
         msg_cache.save()
 
 
+@router.message(Command("dialog"))
+async def start_dialog_message_command(msg: Message):
+    chat_cache, _ = Chat.get_or_create(chat_id=msg.chat.id)
+    if chat_cache.is_dialog_now:
+        await msg.reply('Диалоговый режим уже запущен. Остановите диалог перед этим.')
+        await msg.edit_reply_markup(reply_markup=None)
+        return
+
+    dialog_cache = Dialog.create()
+    DialogMessage.create(dialog=dialog_cache, role='system', text='You are a telegram bot - helpful assistant. You '
+                                                                  'can understand humans speech, using whisper-AI. '
+                                                                  'Your owner and developer are @lava_frai.')
+
+    chat_cache.is_dialog_now = True
+    chat_cache.current_dialog = dialog_cache
+    chat_cache.save()
+
+    await msg.reply('Диалог начат, можете писать и бот ответит.', reply_markup=get_stop_dialog_keyboard())
+
+
 @router.message()
 async def on_message(msg: aiogram.types.Message):
     chat_cache, _ = Chat.get_or_create(chat_id=msg.chat.id)
@@ -81,7 +101,7 @@ async def on_message(msg: aiogram.types.Message):
         ans = await aiDriver.continue_dialog(dialog_messages_cache)
         DialogMessage.create(dialog=chat_cache.current_dialog, role='assistant', text=ans)
         await new_msg.delete()
-        await msg.reply(ans, reply_markup=get_stop_dialog_keyboard())
+        await msg.reply(ans, reply_markup=get_stop_dialog_keyboard(), parse_mode=None)
     except RateLimitError:
         DialogMessage \
             .select() \
@@ -135,23 +155,3 @@ async def stop_dialog(callback_query: CallbackQuery):
     await callback_query.message.reply('Диалог закончился. Используйте /ask, чтобы что-то спросить.')
     await callback_query.message.edit_reply_markup(reply_markup=None)
     await callback_query.answer()
-
-
-@router.message(Command("startdialog"))
-async def start_dialog_message_command(msg: Message):
-    chat_cache, _ = Chat.get_or_create(chat_id=msg.chat.id)
-    if chat_cache.is_dialog_now:
-        await msg.reply('Диалоговый режим уже запущен. Остановите диалог перед этим.')
-        await msg.edit_reply_markup(reply_markup=None)
-        return
-
-    dialog_cache = Dialog.create()
-    DialogMessage.create(dialog=dialog_cache, role='system', text='You are a telegram bot - helpful assistant. You '
-                                                                  'can understand humans speech, using whisper-AI. '
-                                                                  'Your owner and developer are @lava_frai.')
-
-    chat_cache.is_dialog_now = True
-    chat_cache.current_dialog = dialog_cache
-    chat_cache.save()
-
-    await msg.reply('Диалог начат, можете писать и бот ответит.', reply_markup=get_stop_dialog_keyboard())
