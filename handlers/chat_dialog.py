@@ -13,16 +13,6 @@ from keyboard import get_continue_dialog_keyboard, get_stop_dialog_keyboard
 router = Router()
 
 
-@router.message(Command("start"))
-async def start_handler(msg: aiogram.types.Message):
-    await msg.answer("Привет! Добро пожаловать в чат-бот с искусственным интеллектом. Вы можете спросить что-нибудь, используя команду /ask.")
-
-
-@router.message(Command("ping"))
-async def ping(msg: aiogram.types.Message):
-    await msg.answer("pong")
-
-
 @router.message(Command("ask"))
 async def start_dialog_handler(msg: aiogram.types.Message):
     text = msg.text.replace('/ask', '', 1).strip()

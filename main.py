@@ -8,9 +8,16 @@ from aiogram.fsm.storage.memory import MemoryStorage
 
 from config import Config
 from database import init_db
-from handlers import router
 
 from commands import add_commands
+
+
+handlers = [
+    'handlers.ping',
+    'handlers.start',
+    'handlers.draw',
+    'handlers.chat_dialog',
+]
 
 
 async def main():
@@ -21,7 +28,8 @@ async def main():
 
     bot = Bot(token=config.telegram_token, parse_mode=ParseMode.MARKDOWN)
     dp = Dispatcher(storage=MemoryStorage())
-    dp.include_router(router)
+    for module in handlers:
+        dp.include_router(__import__(module, fromlist=['router']).router)
 
     await add_commands(bot)
 
