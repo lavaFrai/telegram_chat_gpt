@@ -1,14 +1,17 @@
 import aiogram
+import openai
 from aiogram import types, F, Router
 from aiogram.enums import ParseMode
 from aiogram.types import InlineKeyboardMarkup, CallbackQuery
 from aiogram.filters import Command
+
 from openai.error import RateLimitError
 
 import aiDriver
 from database import Message, Chat, Dialog, DialogMessage
 from aiDriver import start_dialog
 from keyboard import get_continue_dialog_keyboard, get_stop_dialog_keyboard
+from main import download_file, set_file_extension, download_voice_mp3, remove_file
 
 router = Router()
 
@@ -48,9 +51,21 @@ async def on_message(msg: aiogram.types.Message):
     if not chat_cache.is_dialog_now:
         return
 
-    text = msg.text
-    if len(text) == 0 or text.startswith('//'):
-        return
+    if msg.voice:
+        t_msg = await msg.reply("Расшифровка сообщения...")
+        file = await download_voice_mp3(msg.voice)
+        transcript = await openai.Audio.atranscribe(
+            model='whisper-1',
+            file=open(file, 'rb'),
+        )
+        text = transcript['text']
+        await remove_file(file)
+
+        t_msg = await t_msg.delete()
+    else:
+        text = msg.text
+        if len(text) == 0 or text.startswith('//'):
+            return
 
     new_msg = await msg.reply("Бот думает...")
     chat_cache = Chat.get(chat_id=msg.chat.id)
