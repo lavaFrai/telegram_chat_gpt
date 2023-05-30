@@ -6,4 +6,5 @@ async def add_commands(bot):
         types.bot_command.BotCommand(command="/start", description="Start the bot"),
         types.bot_command.BotCommand(command="/ask", description="Ask something"),
         types.bot_command.BotCommand(command="/draw", description="Draw something"),
+        types.bot_command.BotCommand(command="/start-dialog", description="Start dialog"),
     ])

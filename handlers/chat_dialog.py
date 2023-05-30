@@ -103,7 +103,9 @@ async def continue_dialog(callback_query: CallbackQuery):
         return
 
     dialog_cache = Dialog.create()
-    DialogMessage.create(dialog=dialog_cache, role='system', text='You are a helpful assistant.')
+    DialogMessage.create(dialog=dialog_cache, role='system', text='You are a telegram bot - helpful assistant. You '
+                                                                  'can understand humans speech, using whisper-AI. '
+                                                                  'Your owner and developer are @lava_frai.')
     msg_cache = Message.get(answer_id=callback_query.message.message_id)
     DialogMessage.create(dialog=dialog_cache, role='user', text=msg_cache.text)
     DialogMessage.create(dialog=dialog_cache, role='assistant', text=msg_cache.answer)
@@ -133,3 +135,23 @@ async def stop_dialog(callback_query: CallbackQuery):
     await callback_query.message.reply('Диалог закончился. Используйте /ask, чтобы что-то спросить.')
     await callback_query.message.edit_reply_markup(reply_markup=None)
     await callback_query.answer()
+
+
+@router.message(Command("start-dialog"))
+async def start_dialog_message_command(msg: Message):
+    chat_cache, _ = Chat.get_or_create(chat_id=msg.chat.id)
+    if chat_cache.is_dialog_now:
+        await msg.reply('Диалоговый режим уже запущен. Остановите диалог перед этим.')
+        await msg.edit_reply_markup(reply_markup=None)
+        return
+
+    dialog_cache = Dialog.create()
+    DialogMessage.create(dialog=dialog_cache, role='system', text='You are a telegram bot - helpful assistant. You '
+                                                                  'can understand humans speech, using whisper-AI. '
+                                                                  'Your owner and developer are @lava_frai.')
+
+    chat_cache.is_dialog_now = True
+    chat_cache.current_dialog = dialog_cache
+    chat_cache.save()
+
+    await msg.reply('Диалог начат, можете писать и бот ответит.', reply_markup=get_stop_dialog_keyboard())
