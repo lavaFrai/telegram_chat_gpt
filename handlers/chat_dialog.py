@@ -137,7 +137,7 @@ async def stop_dialog(callback_query: CallbackQuery):
     await callback_query.answer()
 
 
-@router.message(Command("start-dialog"))
+@router.message(Command("startdialog"))
 async def start_dialog_message_command(msg: Message):
     chat_cache, _ = Chat.get_or_create(chat_id=msg.chat.id)
     if chat_cache.is_dialog_now:
